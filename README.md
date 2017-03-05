@@ -21,7 +21,7 @@ After configure your AWS Credentials, then run:
 create a `event.json` file like this:
 
 ```
-{"email_address": "iamvsouza@outlook.com", "status": "subscribed", "merge_fields": {"FNAME": "Vinicius Souza"}}
+{"email_address": "email@vsouza.com", "status": "subscribed", "merge_fields": {"FNAME": "Vinicius Souza"}}
 ```
 
 save on project root folder.
