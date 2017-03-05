@@ -3,9 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 
 	apex "github.com/apex/go-apex"
 )
@@ -16,7 +15,16 @@ type subscriber struct {
 	MergeFields map[string]interface{} `json:"merge_fields"`
 }
 
-func subscribe(subs *subscriber) error {
+func getURL() string {
+	var url bytes.Buffer
+	url.WriteString("https://us12.api.mailchimp.com/3.0/lists/")
+	url.WriteString("lists")
+	url.WriteString(os.Getenv("MAILCHIMP_LIST_ID"))
+	url.WriteString("/members")
+	return url.String()
+}
+
+func subscription(subs *subscriber) error {
 
 	subscriber := &subscriber{
 		Email:       subs.Email,
@@ -28,14 +36,8 @@ func subscribe(subs *subscriber) error {
 	if err != nil {
 		return err
 	}
-
-	var url bytes.Buffer
-	url.WriteString("https://us12.api.mailchimp.com/3.0/lists/")
-	url.WriteString("911e64fe78")
-	url.WriteString("/members")
-	fmt.Println(url.String())
-	req, err := http.NewRequest("POST", url.String(), bytes.NewBuffer(json))
-	req.SetBasicAuth("anystring", "098119cc4c622d98f02ab829803e9ace-us12")
+	req, err := http.NewRequest("POST", getURL(), bytes.NewBuffer(json))
+	req.SetBasicAuth("anystring", os.Getenv("MAILCHIMP_API_KEY"))
 	if err != nil {
 		return err
 	}
@@ -45,8 +47,7 @@ func subscribe(subs *subscriber) error {
 		return err
 	}
 	defer resp.Body.Close()
-	_, err = ioutil.ReadAll(resp.Body)
-	return err
+	return nil
 }
 
 func main() {
@@ -55,7 +56,7 @@ func main() {
 		if err := json.Unmarshal(event, &s); err != nil {
 			return nil, err
 		}
-		if err := subscribe(&s); err != nil {
+		if err := subscription(&s); err != nil {
 			return nil, err
 		}
 		return map[string]interface{}{"status": "success"}, nil
